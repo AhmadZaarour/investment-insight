@@ -1,0 +1,13 @@
+/* Basic styles for the news dashboard */
+body {
+    background-color: #000000;
+    margin: 0;
+    padding: 0;
+}
+
+.table_container {
+    max-height: 400px; /* Adjust based on how many rows you want visible */
+    overflow-y: auto;
+    border: 1px solid #ccc; /* Optional: just to make the container visible */
+  }
+  
