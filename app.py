@@ -19,7 +19,6 @@ session = Session()
 
 @app.route('/')
 def dashboard():
-    #articles = session.query(NewsArticle).all()
 
     ticker = request.args.get('ticker').upper()
     company = request.args.get('company')
@@ -47,6 +46,8 @@ def dashboard():
         'dates': sorted_dates,
         'scores': [daily_avg_sentiment[date] for date in sorted_dates]
     }
+
+    # stock data for plotting
 
     stock_data = fetch_stock_data(ticker=ticker)
     if not stock_data:
