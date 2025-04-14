@@ -20,45 +20,51 @@ session = Session()
 @app.route('/')
 def dashboard():
 
-    if request.args.get('ticker') and request.args.get('nb_days'):
+    if request.args.get('ticker') and request.args.get('nb_days') and request.args.get('period'):
         ticker = request.args.get('ticker').upper()
-        nb_days = request.args.get('nb_days')
+        nb_days = f"{request.args.get('nb_days')}{request.args.get('period')}"
     else:
         ticker = 'TSLA'
-        nb_days = '5'
+        nb_days = '5d'
     
     if request.args.get('company'):
         company = request.args.get('company')
     else:
         company = "tesla"
 
-    # Fetch news matching the ticker
-    articles = session.query(NewsArticle).filter(
-        (NewsArticle.title.ilike(f"%{company}%")) |
-        (NewsArticle.summary.ilike(f"%{company}%"))
-    ).all()
+    try:
+        # Fetch news matching the ticker from db
+        articles = session.query(NewsArticle).filter(
+            (NewsArticle.title.ilike(f"%{company}%")) |
+            (NewsArticle.summary.ilike(f"%{company}%"))
+        ).all()
 
-    # sentiment score trends for plotting
-    daily_scores = defaultdict(list)
-    for article in articles:
-        if article.timestamp:
-            date_str = article.timestamp.strftime('%Y-%m-%d')
-            daily_scores[date_str].append(article.sentiment_score)
+        # sentiment score trends for plotting
+        daily_scores = defaultdict(list)
+        for article in articles:
+            if article.timestamp:
+                date_str = article.timestamp.strftime('%Y-%m-%d')
+                daily_scores[date_str].append(article.sentiment_score)
 
-    daily_avg_sentiment = {
-        date: sum(scores) / len(scores)
-        for date, scores in daily_scores.items()
-    }
+        daily_avg_sentiment = {
+            date: sum(scores) / len(scores)
+            for date, scores in daily_scores.items()
+        }
 
-    sorted_dates = sorted(daily_avg_sentiment.keys())
-    sentiment_trend = {
-        'dates': sorted_dates,
-        'scores': [daily_avg_sentiment[date] for date in sorted_dates]
-    }
+        sorted_dates = sorted(daily_avg_sentiment.keys())
+        sentiment_trend = {
+            'dates': sorted_dates,
+            'scores': [daily_avg_sentiment[date] for date in sorted_dates]
+        }
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
     # stock data for plotting
 
-    stock_data = fetch_stock_data(ticker=ticker, period=f"{nb_days}d")
+    stock_data = fetch_stock_data(ticker=ticker, period=f"{nb_days}")
     if not stock_data:
         return render_template('error.html', message="Stock data not found.")
 
