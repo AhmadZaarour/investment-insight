@@ -24,11 +24,22 @@ def save_articles_to_db(articles):
             timestamp=datetime.datetime.fromisoformat(article['timestamp']),
             sentiment_score = article['sentiment_score']
         )
-        session.add(news_article)
-    session.commit()
+        try:
+            session.add(news_article)
+        except:
+            session.rollback()
+            raise
+    try:
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 if __name__ == "__main__":
+    
     articles = fetch_and_analyze_news()
     if articles:
         save_articles_to_db(articles)
