@@ -20,8 +20,17 @@ session = Session()
 @app.route('/')
 def dashboard():
 
-    ticker = request.args.get('ticker').upper()
-    company = request.args.get('company')
+    if request.args.get('ticker') and request.args.get('nb_days'):
+        ticker = request.args.get('ticker').upper()
+        nb_days = request.args.get('nb_days')
+    else:
+        ticker = 'TSLA'
+        nb_days = '5'
+    
+    if request.args.get('company'):
+        company = request.args.get('company')
+    else:
+        company = "tesla"
 
     # Fetch news matching the ticker
     articles = session.query(NewsArticle).filter(
@@ -49,7 +58,7 @@ def dashboard():
 
     # stock data for plotting
 
-    stock_data = fetch_stock_data(ticker=ticker)
+    stock_data = fetch_stock_data(ticker=ticker, period=f"{nb_days}d")
     if not stock_data:
         return render_template('error.html', message="Stock data not found.")
 
@@ -74,20 +83,13 @@ def dashboard():
         'close': [(history_dict[date]) for date in sorted_dates]
     }
 
-    if ticker or company:
-
-        return render_template(
+    return render_template(
             'dashboard.html', articles=articles,
             sentiment_counts=json.dumps(sentiment_trend),
             ticker=ticker,
             company=company,
             last_price=last_price,
             history=json.dumps(history)
-        )
-    else:
-        articles = session.query(NewsArticle).all()
-        return render_template(
-            'dashboard.html', articles=articles
         )
 
 if __name__ == "__main__":
