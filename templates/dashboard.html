@@ -85,11 +85,14 @@
 
             <form method="GET" action="/" class="mb-4">
 
-                <label for="ticker">Enter Stock Ticker:</label>
+                <label for="ticker">Enter Stock Ticker: </label>
                 <input type="text" name="ticker" id="ticker" value="{{ticker}}" required>
 
-                <label for="company">Enter number of days:</label>
-                <input type="text" name="nb_days" id="nb_days" value="{{nb_days}}" required>
+                <label for="company">Enter period: </label>
+                <input type="number" name="nb_days" id="nb_days" value="{{nb_days}}" required>
+                <input type="radio" name="period" id="period_1" value="d" {% if period == 'd' %}checked{% endif %} required> days
+                <input type="radio" name="period" id="period_2" value="mo" {% if period == 'mo' %}checked{% endif %} required> months
+                <input type="radio" name="period" id="period_3" value="y" {% if period == 'y' %}checked{% endif %} required> years
 
                 <button type="submit" class="btn btn-primary btn-sm">Search</button>
 
@@ -101,6 +104,9 @@
 
             <canvas id="stockChart" width="400" height="200"></canvas>
         </div>
+        {% if not ticker %}
+        <div class="alert alert-warning">No news stocks found for "{{ ticker }}".</div>
+        {% endif %}
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
 
