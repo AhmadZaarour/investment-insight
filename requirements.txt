@@ -1,4 +1,7 @@
 requests
 textblob
 yfinance
+yfinance[nospam]
 sqlalchemy
+ratelimit
+flask
