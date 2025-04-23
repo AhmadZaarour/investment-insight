@@ -5,13 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Investment Insight Dashboard</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
 </head>
 
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/">STYLE</a>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="active">Home</a>
+                <a href="#">Shop</a>
+                <a href="#">Collections</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="nav-icons">
+                <a href="#" class="search-icon"><i class="fas fa-search"></i></a>
+                <a href="#" class="cart-icon"><i class="fas fa-shopping-cart"></i></a>
+                <a href="#" class="account-icon"><i class="fas fa-user"></i></a>
+            </div>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
     <div class="container mt-5">
         <h1>AI Investment Insight Dashboard</h1>
 
@@ -21,7 +46,7 @@
         <form method="GET" action="/" class="mb-4">
 
             <label for="company">Enter Company:</label>
-            <input type="text" name="company" id="company" value="{{ company }}" required>
+            <input type="text" name="company" id="company" required>
 
             <button type="submit" class="btn btn-primary btn-sm">Search</button>
 
@@ -30,6 +55,7 @@
 
     <div class="container mt-5">
         <h1>Latest Financial News</h1>
+        {% if company %}
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table class="table table-striped">
                 <thead class="thead-light">
@@ -45,9 +71,11 @@
                     <tr>
                         <td><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></td>
                         <td>{{ article.summary }}</td>
-                        <td
-                            style="color: {% if article.sentiment_score > 0 %}green{% elif article.sentiment_score < 0 %}red{% else %}orange{% endif %};">
-                            {{ article.sentiment_score }}
+                        <td {% if article.sentiment_score> 0 %}
+                            style="color: green;"
+                            {% elif article.sentiment_score < 0 %} style="color: red;" {% else %} style="color: orange;"
+                                {% endif %}>
+                                {{ article.sentiment_score }}
                         </td>
                         <td>{{ article.timestamp }}</td>
                     </tr>
@@ -57,15 +85,18 @@
             {% if not articles %}
             <div class="alert alert-warning">No news articles found for "{{ company }}".</div>
             {% endif %}
-
         </div>
         <div class="container mt-5">
             <canvas id="sentimentChart" width="400" height="200"></canvas>
         </div>
+        {% endif %}
+        {% if not company %}
+        <div class="alert alert-warning">Search for company to see results".</div>
+        {% endif %}
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             const ctx = document.getElementById('sentimentChart').getContext('2d');
-            const sentimentData = {{ sentiment_counts | safe }};  // Pass the sentiment counts from Flask to JS
+            const sentimentData = JSON.parse('{{ sentiment_counts | tojson | safe }}');  // Pass the sentiment counts from Flask to JS
 
             new Chart(ctx, {
                 type: 'line',
@@ -90,27 +121,90 @@
 
                 <label for="company">Enter period: </label>
                 <input type="number" name="nb_days" id="nb_days" value="{{nb_days}}" required>
-                <input type="radio" name="period" id="period_1" value="d" {% if period == 'd' %}checked{% endif %} required> days
-                <input type="radio" name="period" id="period_2" value="mo" {% if period == 'mo' %}checked{% endif %} required> months
-                <input type="radio" name="period" id="period_3" value="y" {% if period == 'y' %}checked{% endif %} required> years
+                <input type="radio" name="period" id="period_1" value="d" {% if period=='d' %}checked{% endif %}
+                    required> days
+                <input type="radio" name="period" id="period_2" value="mo" {% if period=='mo' %}checked{% endif %}
+                    required> months
+                <input type="radio" name="period" id="period_3" value="y" {% if period=='y' %}checked{% endif %}
+                    required> years
 
                 <button type="submit" class="btn btn-primary btn-sm">Search</button>
 
             </form>
         </div>
+        <h1>Latest Financial News</h1>
+        {% if ticker %}
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Summary</th>
+                        <th>Sentiment</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in stock_articles %}
+                    <tr>
+                        <td><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></td>
+                        <td>{{ article.summary }}</td>
+                        <td {% if article.sentiment_score> 0 %}
+                            style="color: green;"
+                            {% elif article.sentiment_score < 0 %} style="color: red;" {% else %} style="color: orange;"
+                                {% endif %}>
+                                {{ article.sentiment_score }}
+                        </td>
+                        <td>{{ article.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if not stock_articles %}
+            <div class="alert alert-warning">No news articles found for "{{ company }}".</div>
+            {% endif %}
+
+        </div>
+        <div class="container mt-5">
+            <canvas id="s_sentimentChart" width="400" height="200"></canvas>
+        </div>
+        {% endif %}
+        {% if not ticker %}
+        <div class="alert alert-warning">Search for ticker to see results".</div>
+        {% endif %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const sctx = document.getElementById('s_sentimentChart').getContext('2d');
+            const s_sentimentData = JSON.parse('{{ stock_sentiment_counts | tojson | safe }}');  // Pass the sentiment counts from Flask to JS
+
+            new Chart(sctx, {
+                type: 'line',
+                data: {
+                    labels: s_sentimentData.dates,
+                    datasets: [{
+                        label: 'Sentiment Score Over Time',
+                        data: s_sentimentData.scores,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        tension: 0.1
+                    }]
+                }
+            });
+        </script>
+        {% if ticker %}
         <div class="my-4 p-3 bg-light rounded shadow-sm">
             <h2>{{ ticker }} Stock Overview</h2>
             <p><strong>Latest Price:</strong> ${{ last_price }}</p>
 
             <canvas id="stockChart" width="400" height="200"></canvas>
         </div>
+        {% endif %}
         {% if not ticker %}
-        <div class="alert alert-warning">No news stocks found for "{{ ticker }}".</div>
+        <div class="alert alert-warning">Search to see results".</div>
         {% endif %}
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
 
-            const hist = {{ history | safe}};
+            const hist = JSON.parse('{{ history | tojson | safe}}');
 
             const dates = hist.dates
             const closePrices = hist.close.map(Number)
