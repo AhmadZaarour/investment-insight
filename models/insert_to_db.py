@@ -1,10 +1,10 @@
 from sqlalchemy.orm import sessionmaker
-from news_article import NewsArticle, Base
+from dbTables.news_article import NewsArticle, Base
 from sqlalchemy import create_engine
 import datetime
 import os
 from dotenv import load_dotenv
-from analyze_sentiment import fetch_and_analyze_news
+from ML.analyze_news_sentiment import fetch_and_analyze_news
 
 load_dotenv()
 
